@@ -2,38 +2,46 @@
 from abc import ABC, abstractmethod
 
 
-# Composición: cada producto tiene un objeto Categoria.
+# COMPOSICIÓN:
+# Cada producto contiene un objeto de la clase Categoria.
 class Categoria:
     def __init__(self, nombre):
         self.nombre = nombre
 
 
-# Abstracción: define la estructura común de los productos.
+# ABSTRACCIÓN:
+# Esta clase abstracta define la estructura común de los productos.
 class ProductoBebe(ABC):
     def __init__(self, nombre, precio, stock=0, categoria=None):
+        # Validación de datos para mejorar la calidad del software.
         if not nombre.strip():
             raise ValueError("El nombre no puede estar vacío.")
+
         if precio < 0:
             raise ValueError("El precio no puede ser negativo.")
+
         if stock < 0:
             raise ValueError("El stock inicial no puede ser negativo.")
 
         self.nombre = nombre
-        self.__precio = precio  # Encapsulamiento
-        self.__stock = stock    # Encapsulamiento
+        self.__precio = precio  # ENCAPSULAMIENTO
+        self.__stock = stock    # ENCAPSULAMIENTO
+
         self.categoria = categoria or Categoria("General")
 
+    # Propiedad para consultar el precio de forma controlada.
     @property
     def precio(self):
         return self.__precio
 
+    # Propiedad para consultar el stock.
     @property
     def stock(self):
         return self.__stock
 
     @abstractmethod
     def mostrar_detalle(self, formato="completo"):
-        """Cada subclase debe mostrar sus propios detalles."""
+        # Cada subclase debe implementar este método.
         pass
 
     def actualizar_stock(self, cantidad):
@@ -45,33 +53,54 @@ class ProductoBebe(ABC):
         self.__stock = nuevo_stock
 
 
-# Herencia: RopaBebe reutiliza las características del producto base.
+# HERENCIA:
+# RopaBebe hereda atributos y métodos de ProductoBebe.
 class RopaBebe(ProductoBebe):
     def __init__(self, nombre, precio, talla, stock=0):
         super().__init__(
-            nombre, precio, stock, Categoria("Ropa")
+            nombre,
+            precio,
+            stock,
+            Categoria("Ropa")
         )
+
+        if not talla.strip():
+            raise ValueError("La talla no puede estar vacía.")
+
         self.talla = talla
 
-    # Polimorfismo: sobrescribe el método de la clase abstracta.
-    # El argumento formato permite dos presentaciones del mismo método.
+    # POLIMORFISMO:
+    # Sobrescribe mostrar_detalle() con información de ropa.
+    # El argumento formato permite dos presentaciones del método.
     def mostrar_detalle(self, formato="completo"):
         if formato == "corto":
             return f"{self.nombre} - ${self.precio:.2f}"
 
         return (
-            f"ROPA: {self.nombre} | Talla: {self.talla} | "
+            f"ROPA: {self.nombre} | "
+            f"Talla: {self.talla} | "
             f"Categoría: {self.categoria.nombre} | "
-            f"Precio: ${self.precio:.2f} | Stock: {self.stock}"
+            f"Precio: ${self.precio:.2f} | "
+            f"Stock: {self.stock}"
         )
 
 
-# Herencia y polimorfismo: implementa su propia versión del método.
+# HERENCIA Y POLIMORFISMO:
+# AlimentacionBebe implementa su propia versión del método.
 class AlimentacionBebe(ProductoBebe):
     def __init__(self, nombre, precio, edad_recomendada, stock=0):
         super().__init__(
-            nombre, precio, stock, Categoria("Alimentación")
+            nombre,
+            precio,
+            stock,
+            Categoria("Alimentación")
         )
+
+        if not edad_recomendada.strip():
+            raise ValueError(
+                "La edad recomendada no puede estar vacía."
+            )
+
         self.edad_recomendada = edad_recomendada
 
     def mostrar_detalle(self, formato="completo"):
@@ -82,23 +111,28 @@ class AlimentacionBebe(ProductoBebe):
             f"ALIMENTACIÓN: {self.nombre} | "
             f"Edad recomendada: {self.edad_recomendada} | "
             f"Categoría: {self.categoria.nombre} | "
-            f"Precio: ${self.precio:.2f} | Stock: {self.stock}"
+            f"Precio: ${self.precio:.2f} | "
+            f"Stock: {self.stock}"
         )
 
 
-# Agrupación: Inventario administra una colección de productos.
+# AGRUPACIÓN:
+# Inventario mantiene una lista de diferentes productos.
 class Inventario:
     def __init__(self):
         self.productos = []
 
     def agregar(self, producto):
         if not isinstance(producto, ProductoBebe):
-            raise TypeError("Solo se pueden agregar productos para bebés.")
+            raise TypeError(
+                "Solo se pueden agregar productos para bebés."
+            )
 
         self.productos.append(producto)
 
-    # Argumento por defecto: simula sobrecarga de métodos.
-    # Se utiliza el mismo método con formato completo o corto.
+    # SIMULACIÓN DE SOBRECARGA:
+    # Python permite cambiar el comportamiento mediante argumentos
+    # por defecto, en lugar de definir varias versiones del método.
     def mostrar_catalogo(self, formato="completo"):
         print("\nCATÁLOGO PEQUEÑOS PASOS")
         print("-" * 55)
@@ -107,30 +141,52 @@ class Inventario:
             print(producto.mostrar_detalle(formato))
 
 
-# Programa principal
+# PROGRAMA PRINCIPAL
 if __name__ == "__main__":
     inventario = Inventario()
 
-    ropa = RopaBebe("Pijama de algodón", 18.99, "6-9 meses", 15)
-    alimento = AlimentacionBebe(
-        "Biberón", 8.75, "0 meses en adelante", 20
+    # Variables primitivas y objetos de clases.
+    nombre_ropa = "Pijama de algodón"
+    precio_ropa = 18.99
+    talla_ropa = "6-9 meses"
+    stock_ropa = 15
+
+    ropa = RopaBebe(
+        nombre_ropa,
+        precio_ropa,
+        talla_ropa,
+        stock_ropa
     )
 
+    alimento = AlimentacionBebe(
+        "Biberón",
+        8.75,
+        "0 meses en adelante",
+        20
+    )
+
+    # Agrupación: se agregan objetos al inventario.
     inventario.agregar(ropa)
     inventario.agregar(alimento)
 
-    # Polimorfismo: cada objeto presenta sus propios detalles.
+    # Polimorfismo: cada producto muestra sus propios detalles.
     inventario.mostrar_catalogo()
 
-    # Simulación de sobrecarga mediante un argumento por defecto.
+    # Argumento diferente: muestra el catálogo resumido.
     inventario.mostrar_catalogo("corto")
 
-    # Actualización del stock con validación.
+    # Actualización controlada del stock.
     ropa.actualizar_stock(5)
     print("\nStock actualizado:", ropa.stock)
 
-    # Prueba de la validación de datos.
+    # Prueba de validación: el precio negativo debe rechazarse.
     try:
-        ProductoPrueba = RopaBebe("Pijama", -5, "3-6 meses", 2)
+        RopaBebe("Pijama de prueba", -5, "3-6 meses", 2)
     except ValueError as error:
         print("\nValidación correcta:", error)
+
+    # Prueba de validación: la talla vacía debe rechazarse.
+    try:
+        RopaBebe("Pijama de prueba", 10, "   ", 2)
+    except ValueError as error:
+        print("Validación correcta:", error)
